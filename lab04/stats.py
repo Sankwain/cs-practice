@@ -16,7 +16,7 @@ def parse_record(line: str):
         except ValueError:
             raise ValueError('Температура не является числом')
 
-        return {"city": parse_list[0], "temperature": parse_list[1], "date": parse_list[2]}
+        return {"city": parse_list[0].replace(' ',''), "temperature": parse_list[1], "date": parse_list[2]}
     else:
         raise ValueError('Передаётся не строчка')
 
