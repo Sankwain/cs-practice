@@ -11,11 +11,11 @@ def parse_record(line: str):
         raise ValueError('Поле даты пустое')
 
     try:
-        parse_list[1] = float(parse_list[1])
+        parse_list[1] = float(parse_list[1].replace(',','.'))
     except ValueError:
         raise ValueError('Температура не является числом')
 
-    return {"city": parse_list[0], "temperature": parse_list[1], "date": parse_list[2]}
+    return {"Город": parse_list[0], "Температура": parse_list[1], "Дата": parse_list[2]}
 
 
 def read_valid(line_list: list):
@@ -54,7 +54,8 @@ def average_by_city(records: list):
 def warmest_city(records: list):
     averages = average_by_city(records)
     if not averages:
-        raise ValueError("Нет данных для анализа")
-    max_temp = max(averages.values())
-    candidates = [city for city, temp in averages.items() if temp == max_temp]
-    return min(candidates)
+        pass
+    else:
+        max_temp = max(averages.values())
+        candidates = [city for city, temp in averages.items() if temp == max_temp]
+        return min(candidates)
