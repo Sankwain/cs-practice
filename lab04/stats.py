@@ -27,3 +27,35 @@ def read_valid(line_list:list):
         except ValueError:
             pass
     return parsed_List
+
+
+def average_by_city(records: list):
+    city_stats = {}
+
+    for record in records:
+        city = record.get('City')
+        temp = record.get('Temperature')
+
+        if city not in city_stats:
+            city_stats[city] = [0.0, 0]
+
+        city_stats[city][0] += temp
+        city_stats[city][1] += 1
+
+    average_dct = {}
+    for city in city_stats:
+        total_temp = city_stats[city][0]
+        count = city_stats[city][1]
+        average_dct[city] = total_temp / count
+
+    return average_dct
+
+
+def warmest_city(records: list):
+    averages = average_by_city(records)
+
+    max_temp = max(averages.values())
+
+    candidates = [city for city, temp in averages.items() if temp == max_temp]
+
+    return min(candidates)
