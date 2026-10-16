@@ -11,7 +11,7 @@ def parse_record(line: str):
         raise ValueError('Поле даты пустое')
 
     try:
-        parse_list[1] = float(parse_list[1].replace(',','.'))
+        parse_list[1] = float(parse_list[1])
     except ValueError:
         raise ValueError('Температура не является числом')
 
