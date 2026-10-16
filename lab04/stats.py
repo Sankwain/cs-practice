@@ -15,7 +15,7 @@
     except ValueError:
         raise ValueError('Температура не является числом')
 
-    return {"City":parse_list[0],"Temperature":parse_list[1],"Date":parse_list[2]}
+    return {"city":parse_list[0],"temperature":parse_list[1],"date":parse_list[2]}
 
 
 def read_valid(line_list:list):
