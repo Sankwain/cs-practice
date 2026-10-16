@@ -34,8 +34,8 @@ def read_valid(line_list: list):
 def average_by_city(records: list):
     city_stats = {}
     for record in records:
-        city = record.get('Город')
-        temp = record.get('Температура')
+        city = record.get('city')
+        temp = record.get('temperature')
         if city is None or temp is None:
             continue
         if city not in city_stats:
