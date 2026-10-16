@@ -1,22 +1,24 @@
 def parse_record(line: str):
     parse_list = line.split(';')
+    if str(line) == line:
 
-    if len(parse_list) != 3:
-        raise ValueError('Полей не ровно 3')
+        if len(parse_list) != 3:
+            raise ValueError('Полей не ровно 3')
 
-    if not parse_list[0]:
-        raise ValueError('Поле города пустое')
+        if not parse_list[0]:
+            raise ValueError('Поле города пустое')
 
-    if not parse_list[-1]:
-        raise ValueError('Поле даты пустое')
+        if not parse_list[-1]:
+            raise ValueError('Поле даты пустое')
 
-    try:
-        parse_list[1] = float(parse_list[1])
-    except ValueError:
-        raise ValueError('Температура не является числом')
+        try:
+            parse_list[1] = float(parse_list[1])
+        except ValueError:
+            raise ValueError('Температура не является числом')
 
-    return {"city": parse_list[0], "temperature": parse_list[1], "date": parse_list[2]}
-
+        return {"city": parse_list[0], "temperature": parse_list[1], "date": parse_list[2]}
+    else:
+        raise ValueError('Передаётся не строчка')
 
 def read_valid(line_list: list):
     parsed_list = []
@@ -34,8 +36,8 @@ def read_valid(line_list: list):
 def average_by_city(records: list):
     city_stats = {}
     for record in records:
-        city = record.get('city')
-        temp = record.get('temperature')
+        city = record.get('Город')
+        temp = record.get('Температура')
         if city is None or temp is None:
             continue
         if city not in city_stats:
