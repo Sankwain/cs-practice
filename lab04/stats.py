@@ -21,6 +21,8 @@
 def read_valid(line_list:list):
     parsed_List = []
     for line in line_list:
+        if not line.strip():
+            continue
         try:
             parsed_dictionary = parse_record(line)
             parsed_List.append(parsed_dictionary)
