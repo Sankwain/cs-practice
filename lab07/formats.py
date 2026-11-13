@@ -29,11 +29,6 @@ def _parse_value(raw: str):
         return int(s)
     except ValueError:
         pass
-    if ',' in s and '.' not in s:
-        try:
-            return float(s.replace(',', '.'))
-        except ValueError:
-            pass
     try:
         return float(s)
     except ValueError:
@@ -60,7 +55,10 @@ def parse_settings(lines: list[str]) -> dict:
         key = line[:colon_pos].strip()
         value_part = line[colon_pos + 1:].strip()
         if value_part:
-            result[key] = _parse_value(value_part)
+            if "," in value_part:
+                result[key] = [_parse_value(v) for v in value_part.split(",")]
+            else:
+                result[key] = _parse_value(value_part)
             i += 1
         else:
             lst = []
