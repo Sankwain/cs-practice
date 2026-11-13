@@ -6,7 +6,7 @@ def csv_to_records(text: str) -> list[dict]:
     lines = text.strip().splitlines()
     if not lines:
         return []
-    headers = lines[0].split(",")
+    headers = [h.strip() for h in lines[0].split(",")]
     records = []
     for line in lines[1:]:
         if not line.strip():
@@ -14,7 +14,7 @@ def csv_to_records(text: str) -> list[dict]:
         values = line.split(",")
         record = {}
         for h, v in zip(headers, values):
-            record[h] = v
+            record[h] = v.strip()
         records.append(record)
     return records
 
@@ -31,8 +31,9 @@ def _parse_value(raw: str):
         return int(s)
     except ValueError:
         pass
+    # Поддержка запятой как десятичного разделителя (3,5 → 3.5)
     try:
-        return float(s)
+        return float(s.replace(",", "."))
     except ValueError:
         pass
     return s
@@ -59,7 +60,6 @@ def parse_settings(lines: list[str]) -> dict:
         # Ищем первое двоеточие
         colon_pos = line.find(":")
         if colon_pos == -1:
-            # Строка без двоеточия — пропускаем (не должно встречаться, но на всякий случай)
             i += 1
             continue
 
@@ -67,7 +67,6 @@ def parse_settings(lines: list[str]) -> dict:
         value_part = line[colon_pos + 1:].strip()
 
         if value_part:
-            # Обычная пара ключ: значение
             result[key] = _parse_value(value_part)
             i += 1
         else:
@@ -101,7 +100,6 @@ def merge_by_key(rows: list[dict], extra: dict, key: str = "id") -> list[dict]:
     for row in rows:
         lookup = row.get(key)
         if lookup in extra:
-            # Сначала поля справочника, затем поля записи (перезаписывают при конфликте)
             merged = {**extra[lookup], **row}
             result.append(merged)
         else:
