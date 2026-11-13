@@ -1,19 +1,16 @@
 import json
 
 
-def csv_to_records(text: str) -> list[dict]:
-    lines = text.strip().splitlines()
-    if not lines:
-        return []
-    headers = lines[0].split(",")
-    records = []
+def csv_to_records(text: str) -> list[dict[str, str]]:
+    lines = text.strip().split("\n")
+    headers = [h.strip() for h in lines[0].split(",")]
+    result = []
     for line in lines[1:]:
-        if not line.strip():
+        if not line.strip():  # пропускаем пустые строки
             continue
-        values = line.split(",")
-        record = {h: v for h, v in zip(headers, values)}
-        records.append(record)
-    return records
+        values = [v.strip() for v in line.split(",")]
+        result.append(dict(zip(headers, values)))
+    return result
 
 
 def _parse_value(raw: str):
@@ -35,53 +32,26 @@ def _parse_value(raw: str):
 
 def parse_settings(lines: list[str]) -> dict:
     result = {}
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-
+    for line in lines:
+        # Отбрасываем комментарий
         if "#" in line:
             line = line[:line.index("#")]
-        line = line.rstrip()
-
-        if not line.strip():
-            i += 1
+        line = line.strip()
+        if not line:
             continue
-
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            i += 1
-            continue
-
-        if ":" in line:
-            colon_pos = line.index(":")
-            key = line[:colon_pos].strip()
-            value_part = line[colon_pos + 1:].strip()
-
-            if value_part:
-                result[key] = _parse_value(value_part)
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        # Пробуем превратить в число
+        try:
+            num_str = value.replace(",", ".")
+            if "." in num_str:
+                result[key] = float(num_str)
             else:
-                lst = []
-                i += 1
-                while i < len(lines):
-                    sub = lines[i]
-                    if "#" in sub:
-                        sub = sub[:sub.index("#")]
-                    sub = sub.rstrip()
-                    sub_stripped = sub.strip()
-                    if sub_stripped.startswith("- "):
-                        lst.append(_parse_value(sub_stripped[2:]))
-                        i += 1
-                    elif sub_stripped == "":
-                        i += 1
-                    else:
-                        break
-                result[key] = lst
-                continue 
-
-        i += 1
-
+                result[key] = int(num_str)
+        except ValueError:
+            result[key] = value
     return result
-
 
 def merge_by_key(rows: list[dict], extra: dict, key: str = "id") -> list[dict]:
     result = []
