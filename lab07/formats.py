@@ -1,63 +1,107 @@
 import json
 
 
-def csv_to_records(text: str) -> list[dict[str, str]]:
-    lines = text.strip().split("\n")
-    headers = [h.strip() for h in lines[0].split(",")]
-    result = []
+def csv_to_records(text: str) -> list[dict]:
+    """Разбирает CSV с заголовком в список словарей. Значения остаются строками."""
+    lines = text.strip().splitlines()
+    if not lines:
+        return []
+    headers = lines[0].split(",")
+    records = []
     for line in lines[1:]:
-        if not line.strip():  # пропускаем пустые строки
+        if not line.strip():
             continue
-        values = [v.strip() for v in line.split(",")]
-        result.append(dict(zip(headers, values)))
-    return result
+        values = line.split(",")
+        record = {}
+        for h, v in zip(headers, values):
+            record[h] = v
+        records.append(record)
+    return records
 
 
 def _parse_value(raw: str):
-    raw = raw.strip()
-    if raw.lower() in ("true", "yes"):
+    """Приводит строку к нужному типу: bool, int, float или оставляет строкой."""
+    s = raw.strip()
+    low = s.lower()
+    if low in ("true", "yes"):
         return True
-    if raw.lower() in ("false", "no"):
+    if low in ("false", "no"):
         return False
     try:
-        return int(raw)
+        return int(s)
     except ValueError:
         pass
     try:
-        return float(raw)
+        return float(s)
     except ValueError:
         pass
-    return raw
+    return s
 
 
 def parse_settings(lines: list[str]) -> dict:
+    """Простой YAML: «ключ: значение», списки через «- », комментарии после #."""
     result = {}
-    for line in lines:
-        # Отбрасываем комментарий
-        if "#" in line:
-            line = line[:line.index("#")]
-        line = line.strip()
-        if not line:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # Убираем комментарий (всё после первого #)
+        comment_pos = line.find("#")
+        if comment_pos != -1:
+            line = line[:comment_pos]
+        line = line.rstrip()
+
+        # Пропускаем пустые строки
+        if not line.strip():
+            i += 1
             continue
-        key, value = line.split(":", 1)
-        key = key.strip()
-        value = value.strip()
-        # Пробуем превратить в число
-        try:
-            num_str = value.replace(",", ".")
-            if "." in num_str:
-                result[key] = float(num_str)
-            else:
-                result[key] = int(num_str)
-        except ValueError:
-            result[key] = value
+
+        # Ищем первое двоеточие
+        colon_pos = line.find(":")
+        if colon_pos == -1:
+            # Строка без двоеточия — пропускаем (не должно встречаться, но на всякий случай)
+            i += 1
+            continue
+
+        key = line[:colon_pos].strip()
+        value_part = line[colon_pos + 1:].strip()
+
+        if value_part:
+            # Обычная пара ключ: значение
+            result[key] = _parse_value(value_part)
+            i += 1
+        else:
+            # Ключ без значения — открывает список
+            lst = []
+            i += 1
+            while i < len(lines):
+                sub = lines[i]
+                comment_pos = sub.find("#")
+                if comment_pos != -1:
+                    sub = sub[:comment_pos]
+                sub = sub.rstrip()
+                sub_stripped = sub.strip()
+
+                if sub_stripped.startswith("- "):
+                    lst.append(_parse_value(sub_stripped[2:]))
+                    i += 1
+                elif sub_stripped == "":
+                    i += 1
+                else:
+                    break
+            result[key] = lst
+
     return result
 
+
 def merge_by_key(rows: list[dict], extra: dict, key: str = "id") -> list[dict]:
+    """Дополняет записи сведениями из словаря по значению ключа key.
+    Поля самой записи важнее: при конфликте остаётся значение из записи."""
     result = []
     for row in rows:
         lookup = row.get(key)
         if lookup in extra:
+            # Сначала поля справочника, затем поля записи (перезаписывают при конфликте)
             merged = {**extra[lookup], **row}
             result.append(merged)
         else:
