@@ -12,6 +12,11 @@ def count_by_extension(paths: list[str]) -> dict[str, int]:
         result[ext] = result.get(ext, 0) + 1
     return result
 
+def deepest_path(paths: list[str]) -> str:
+    if not paths:
+        return ""
+    return max(paths, key=lambda p: (p.count("/"), [-ord(c) for c in p]))
+
 
 def human_size(n_bytes: int) -> str:
     units = ["Б", "КБ", "МБ", "ГБ", "ТБ"]
