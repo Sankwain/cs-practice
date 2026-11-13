@@ -29,6 +29,11 @@ def _parse_value(raw: str):
         return int(s)
     except ValueError:
         pass
+    if ',' in s and '.' not in s:
+        try:
+            return float(s.replace(',', '.'))
+        except ValueError:
+            pass
     try:
         return float(s)
     except ValueError:
