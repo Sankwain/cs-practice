@@ -13,4 +13,13 @@ def count_by_extension(paths: list[str]) -> dict[str, int]:
     return result
 
 
-    
+def human_size(n_bytes: int) -> str:
+    units = ["Б", "КБ", "МБ", "ГБ", "ТБ"]
+    value = float(n_bytes)
+    for unit in units:
+        if value < 1024 or unit == "ТБ":
+            if unit == "Б":
+                return f"{int(value)} Б"
+            return f"{value:.1f} {unit}"
+        value /= 1024
+    return f"{value:.1f} ТБ"
