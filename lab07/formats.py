@@ -83,3 +83,18 @@ def parse_settings(lines: list[str]) -> dict:
     return result
 
 
+def merge_by_key(rows: list[dict], extra: dict, key: str = "id") -> list[dict]:
+    result = []
+    for row in rows:
+        lookup = row.get(key)
+        if lookup in extra:
+            merged = {**extra[lookup], **row}
+            result.append(merged)
+        else:
+            result.append(dict(row))
+    return result
+
+
+def records_to_json(records: list[dict]) -> str:
+    """Список словарей в JSON: отступ 2, ключи по алфавиту, кириллица как есть."""
+    return json.dumps(records, indent=2, sort_keys=True, ensure_ascii=False)
