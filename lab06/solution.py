@@ -11,7 +11,7 @@ def count_by_extension(paths: list[str]) -> dict[str, int]:
 def deepest_path(paths: list[str]) -> str:
     if not paths:
         return ""
-    return max(paths, key=lambda p: (p.count("/"), [-ord(c) for c in p]))
+    return sorted(paths, key=lambda p: (-p.count("/"), p))[0]
 
 
 def human_size(n_bytes: int) -> str:
